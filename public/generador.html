@@ -36,9 +36,10 @@
             </form>
 
             <div id="resultadoContainer" class="mt-4" style="display: none;">
-                <div class="alert alert-success text-center">
-                    <p class="small mb-1">¡Clave generada y guardada en la base de datos!</p>
-                    <strong id="claveGenerada" class="fs-5 text-dark" style="user-select: all;"></strong>
+                <div class="alert alert-success text-center border-success">
+                    <p class="small mb-1 text-success fw-bold">LICENCIA GENERADA Y GUARDADA EN LA NUBE</p>
+                    <strong id="claveGenerada" class="fs-5 text-dark d-block my-2" style="user-select: all; background: #fff; padding: 8px; border-radius: 5px; border: 1px dashed #198754;"></strong>
+                    <button type="button" class="btn btn-success btn-sm w-100 mt-2" onclick="copiarClave()">Copiar Clave 📋</button>
                 </div>
             </div>
 
@@ -51,10 +52,12 @@
     <script>
         document.getElementById('formGen').addEventListener('submit', (e) => {
             e.preventDefault();
+            
             const tienda = document.getElementById('tienda').value;
             const mes = document.getElementById('mes').value;
             const anio = document.getElementById('anio').value;
 
+            // Envía los datos al servidor para que cree la clave y la guarde en la base de datos
             fetch('/api/generar-licencia', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -66,11 +69,21 @@
                     document.getElementById('claveGenerada').innerText = data.key;
                     document.getElementById('resultadoContainer').style.display = 'block';
                 } else {
-                    alert('Error al generar la clave');
+                    alert('Error al generar la clave: ' + (data.message || ''));
                 }
             })
-            .catch(err => console.error('Error:', err));
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Ocurrió un error de conexión con el servidor.');
+            });
         });
+
+        function copiarClave() {
+            const claveTexto = document.getElementById('claveGenerada').innerText;
+            navigator.clipboard.writeText(claveTexto).then(() => {
+                alert('¡Clave copiada al portapapeles!');
+            });
+        }
     </script>
 </body>
 </html>
