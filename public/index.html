@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Bio-Lab Pro - Gestión de Laboratorio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: #f0f4f8; color: #333; padding: 15px; }
+        .container { max-width: 1050px; margin: 0 auto; }
+        
+        .top-bar { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px 25px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .datetime-display { font-size: 17px; font-weight: 700; letter-spacing: 0.5px; line-height: 1.4; }
+        .rates-container { display: flex; gap: 20px; align-items: center; }
+        .rate-box { background: rgba(255, 255, 255, 0.15); padding: 8px 12px; border-radius: 8px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+        .top-bar input { width: 95px; padding: 5px 8px; border-radius: 6px; border: none; font-weight: bold; text-align: center; font-size: 14px; background: #fff; color: #1e3c72; }
+
+        .card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-bottom: 20px; }
+        h1, h2, h3 { color: #1e3c72; margin-bottom: 10px; }
+        p { color: #666; margin-bottom: 20px; font-size: 14px; }
+        
+        .form-row { display: flex; gap: 20px; margin-bottom: 15px; }
+        .form-group { flex: 1; margin-bottom: 10px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; color: #2c3e50; font-size: 13px; }
+        input[type="text"], input[type="number"], select { width: 100%; padding: 11px; border: 1px solid #dcdde1; border-radius: 8px; font-size: 14px; background: #fafbfc; }
+        input:focus, select:focus { outline: none; border-color: #2a5298; background: #fff; box-shadow: 0 0 5px rgba(42, 82, 152, 0.2); }
+        
+        .btn { background-color: #27ae60; color: white; border: none; padding: 14px 20px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; width: 100%; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); margin-top: 10px; }
+        .btn:hover { background-color: #219653; }
+        .btn-print { background-color: #2980b9; box-shadow: 0 4px 10px rgba(41, 128, 185, 0.3); }
+        .btn-print:hover { background-color: #2471a3; }
+
+        .exam-category { margin-bottom: 20px; border: 1px solid #e1e4e8; border-radius: 10px; padding: 15px; background: #fdfdfd; }
+        .exam-category h4 { color: #1e3c72; margin-bottom: 12px; font-size: 15px; border-bottom: 2px solid #2a5298; padding-bottom: 6px; }
+        .exam-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+        .exam-item { display: flex; align-items: center; justify-content: space-between; font-size: 13px; background: #fff; padding: 8px 12px; border: 1px solid #e4e7eb; border-radius: 8px; }
+        .exam-left { display: flex; align-items: center; gap: 8px; font-weight: 500; color: #34495e; }
+        .exam-price { width: 80px; padding: 5px; text-align: right; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: bold; }
+
+        .totales-box { background: #f0f4f8; border: 1px solid #cbd5e1; padding: 20px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-around; text-align: center; flex-wrap: wrap; gap: 15px; }
+        .total-item h3 { font-size: 22px; font-weight: 700; }
+        .total-item span { font-size: 12px; color: #64748b; font-weight: 600; letter-spacing: 0.5px; }
+
+        .payment-box { background: #fffbeb; border: 1px solid #fde047; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+
+        /* Estilo para inventario */
+        .inventory-section { background: #e8f4f8; border: 1px solid #bbe1fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 10px; }
+        .inventory-card { background: #fff; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; }
+        .inventory-card h5 { color: #1e3c72; font-size: 13px; margin-bottom: 5px; }
+        .inventory-card input { padding: 6px; font-size: 13px; text-align: center; }
+
+        #mensajeError { color: #e74c3c; font-weight: 500; margin-top: 10px; text-align: center; }
+        .hidden { display: none; }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .top-bar, .btn, .rate-box, input[type="number"], select, .inventory-section { display: none !important; }
+            .card { box-shadow: none; padding: 0; border: none; }
+            .container { max-width: 100%; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- PANTALLA DE ACTIVACIÓN -->
+        <div id="licencia-container" class="card" style="max-width: 420px; margin: 80px auto; text-align: center;">
+            <h2>🔬 Bio-Lab Pro</h2>
+            <p>Ingrese su clave de licencia para iniciar el sistema.</p>
+            <div class="form-group">
+                <input type="text" id="licenseKey" placeholder="Ingrese su clave..." style="text-align: center; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">
+            </div>
+            <button onclick="activarSistema()" class="btn" style="background-color: #2a5298;">Iniciar Sistema</button>
+            <p id="mensajeError"></p>
+        </div>
+
+        <!-- PANEL PRINCIPAL -->
+        <div id="dashboard-container" class="hidden">
+            
+            <div class="top-bar">
+                <div class="datetime-display" id="live-datetime">🔬 🧫 LABORATORIO | 📅 Cargando...</div>
+                <div class="rates-container">
+                    <div class="rate-box">Tasa USD ($): <input type="number" id="tasaUsd" value="36.50" step="0.01" oninput="calcularTotales()"> Bs</div>
+                    <div class="rate-box">Tasa EUR (€): <input type="number" id="tasaEur" value="39.00" step="0.01" oninput="calcularTotales()"> Bs</div>
+                </div>
+            </div>
+
+            <!-- CONTROL DE INVENTARIO DE LABORATORIO -->
+            <div class="inventory-section">
+                <h3>📦 Control de Inventario de Materiales de Laboratorio</h3>
+                <p style="margin-bottom: 10px;">Gestione existencias de tubos, jeringas, reactivos y consumibles de toma de muestra.</p>
+                <div class="inventory-grid">
+                    <div class="inventory-card">
+                        <h5>Tubos Tapa Roja (SST)</h5>
+                        <input type="number" id="invTapaRoja" value="150" oninput="chequearInventario()">
+                        <span id="alertaRoja" style="font-size: 11px; font-weight: bold;"></span>
+                    </div>
+                    <div class="inventory-card">
+                        <h5>Tubos Tapa Morada (EDTA)</h5>
+                        <input type="number" id="invTapaMorada" value="120" oninput="chequearInventario()">
+                        <span id="alertaMorada" style="font-size: 11px; font-weight: bold;"></span>
+                    </div>
+                    <div class="inventory-card">
+                        <h5>Jeringas 5ml / 10ml</h5>
+                        <input type="number" id="invJeringas" value="80" oninput="chequearInventario()">
+                        <span id="alertaJeringas" style="font-size: 11px; font-weight: bold;"></span>
+                    </div>
+                    <div class="inventory-card">
+                        <h5>Agujas Vacutainer / Holder</h5>
+                        <input type="number" id="invAgujas" value="45" oninput="chequearInventario()">
+                        <span id="alertaAgujas" style="font-size: 11px; font-weight: bold;"></span>
+                    </div>
+                    <div class="inventory-card">
+                        <h5>Torundas de Algodón / Alcohol</h5>
+                        <input type="number" id="invTorundas" value="300" oninput="chequearInventario()">
+                        <span id="alertaTorundas" style="font-size: 11px; font-weight: bold;"></span>
+                    </div>
+                    <!-- NUEVOS 3 ESPACIOS DE INVENTARIO -->
+                    <div class="inventory-card">
+                        <h5>Lancetas para Punción</h5>
+                        <input type="number" id="invLancetas" value="200" oninput="chequearInventario()">
+                        <span id="alertaLancetas" style="font-size: 11px; font-weight: bold;"></span>
+                    </div>
+                    <div class="inventory-card">
+                        <h5>Láminas Portaobjetos</h5>
+                        <input type="number" id="invLaminas" value="100" oninput="chequearInventario()">
+                        <span id="alertaLaminas" style="font-size: 11px; font-weight: bold;"></span>
+                    </div>
+                    <div class="inventory-card">
+                        <h5>Frascos de Orina / Heces</h5>
+                        <input type="number" id="invFrascos" value="90" oninput="chequearInventario()">
+                        <span id="alertaFrascos" style="font-size: 11px; font-weight: bold;"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h1>Panel de Control - Registro de Exámenes</h1>
+                <p>Complete los datos del paciente, configure los precios y genere órdenes listas para imprimir en cualquier impresora de oficina.</p>
+
+                <form id="formPago">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nombre y Apellido:</label>
+                            <input type="text" id="paciente" required placeholder="Ej. María Pérez">
+                        </div>
+                        <div class="form-group">
+                            <label>Cédula de Identidad:</label>
+                            <input type="text" id="cedula" required placeholder="Ej. V-12345678">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Teléfono de Contacto:</label>
+                            <input type="text" id="telefono" required placeholder="Ej. 0414-1234567">
+                        </div>
+                        <div class="form-group">
+                            <label>Dirección:</label>
+                            <input type="text" id="direccion" placeholder="Dirección de residencia">
+                        </div>
+                    </div>
+
+                    <!-- CATÁLOGO DE EXÁMENES -->
+                    <div class="form-group">
+                        <label style="font-size: 15px; margin-bottom: 12px; color: #1e3c72; font-weight: 700;">📋 Catálogo General de Exámenes (Indique el precio en $):</label>
+                        
+                        <div class="exam-category">
+                            <h4>🩸 Hematología y Coagulación</h4>
+                            <div class="exam-grid">
+                                <div class="exam-item">
+                                    <div class="exam-left"><input type="checkbox" name="examenes" value="Hematología Completa" onchange="calcularTotales()"> Hematología Completa</div>
+                                    <input type="number" step="0.01" value="0.00" class="exam-price" oninput="calcularTotales()"> $
+                                </div>
+                                <div class="exam-item">
+                                    <div class="exam-left"><input type="checkbox" name="examenes" value="Recuento de Leucocitos" onchange="calcularTotales()"> Recuento de Leucocitos</div>
+                                    <input type="number" step="0.01" value="0.00" class="exam-price" oninput="calcularTotales()"> $
+                                </div>
+                                <div class="exam-item">
+                                    <div class="exam-left"><input type="checkbox" name="examenes" value="Hemoglobina y Hematocrito" onchange="calcularTotales()"> Hemoglobina y Hematocrito</div>
+                                    <input type="number" step="0.01" value="0.00" class="exam-price" oninput="calcularTotales()"> $
+                                </div>
+                                <div class="exam-item">
+                                    <div class="exam-left"><input type="checkbox" name="examenes" value="Recuento de Plaquetas" onchange="calcularTotales()"> Recuento de Plaquetas</div>
+                                    <input type="number" step="0.01" value="0.00" class="exam-price" oninput="calcularTotales()"> $
+                                </div>
+                                <div class="exam-item">
+                                    <div class="exam-left"><input type="checkbox" name="examenes" value="Tiempo de Protrombina" onchange="calcularTotales()"> Tiempo de Protrombina</div>
+                                    <input type="number" step="0.01" value="0.00" class="exam-price" oninput="calcularTotales()"> $
+                                </div>
+                                <div class="exam-item">
+                                    <div class="exam-left"><input type="checkbox" name="examenes" value="VSG" onchange="calcularTotales()"> Velocidad de Sed. (VSG)</div>
+                                    <input type="number" step="0.01" value="0.00" class="exam-price" oninput="calcularTotales()"> $
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="exam-category">
+                            <h4>🧪 Química Sanguínea y Metabolismo</h4>
+                            <div class="exam-grid">
+                                <div class="exam-item">
+                                    <div class="exam-left"><input type="checkbox" name="examenes" value="Glicemia Basal" onchange="calcularTotales()"> Glicemia Basal (Glucosa)</div>
+                                    <input type="number" step="0.01" value="0.00" class="exam-price" oninput="calcularTotales()"> $
+                                </div>
+                                <div class="exam-item">
+                                    <div class="exam-left"><input type="checkbox" name="examenes" value="Urea y Creatinina" onchange="calcularTotales()"> Urea y Creatinina</div>
+                                    <input type="number" step="0.01" value="0.00" class="exam-price" oninput="calcularTotales()"> $
+                                </div>
+                                <div class="exam-item">
+                                    <div class="exam-left"><input type="checkbox" name="examenes" value="Ácido Úrico" onchange="calcularTotales()"> Ácido Úrico</div>
+                                    <input type="number" step="0.01" value="0.00" class="exam-price" oninput="calcularTotales()"> $
+                                </div>
+                                <div class="exam-item">
+                                    <div class="exam-left"><input type="checkbox" name="examenes" value="Perfil Lipídico" onchange="calcularTotales()"> Perfil Lipídico</div>
+                                    <input type="number" step="0.01" value="0.00" class="exam-price" oninput="calcularTotales()"> $
+                                </div>
+                                <div class="exam-item">
+                                    <div class="exam-left"><input type="checkbox" name="examenes" value="Perfil Hepático" onchange="calcularTotales()"> Perfil Hepático</div>
+                                    <input type="number" step="0.01" value="0.00" class="exam-price" oninput="calcularTotales()"> $
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="exam-category">
+                            <h4>🧬 Uroanálisis y Misceláneos</h4>
+                            <div class="exam-grid">
+                                <div class="exam-item">
+                                    <div class="exam-left"><input type="checkbox" name="examenes" value="Examen de Orina (EGO)" onchange="calcularTotales()"> Examen de Orina (EGO)</div>
+                                    <input type="number" step="0.01" value="0.00" class="exam-price" oninput="calcularTotales()"> $
+                                </div>
+                                <div class="exam-item">
+                                    <div class="exam-left"><input type="checkbox" name="examenes" value="Urocultivo" onchange="calcularTotales()"> Urocultivo</div>
+                                    <input type="number" step="0.01" value="0.00" class="exam-price" oninput="calcularTotales()"> $
+                                </div>
+                                <div class="exam-item">
+                                    <div class="exam-left"><input type="checkbox" name="examenes" value="Prueba de Embarazo" onchange="calcularTotales()"> Prueba de Embarazo (HCG)</div>
+                                    <input type="number" step="0.01" value="0.00" class="exam-price" oninput="calcularTotales()"> $
+                                </div>
+                                <div class="exam-item">
+                                    <div class="exam-left"><input type="checkbox" name="examenes" value="VIH / VDRL" onchange="calcularTotales()"> Pruebas Rápidas (VIH / VDRL)</div>
+                                    <input type="number" step="0.01" value="0.00" class="exam-price" oninput="calcularTotales()"> $
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="totales-box">
+                        <div class="total-item">
+                            <h3 id="totalDolares">$0,00</h3>
+                            <span>TOTAL EN DÓLARES</span>
+                        </div>
+                        <div class="total-item">
+                            <h3 id="totalBolivares">0,00 Bs</h3>
+                            <span>TOTAL EN BOLÍVARES</span>
+                        </div>
+                        <div class="total-item">
+                            <h3 id="totalEuros">€0,00</h3>
+                            <span>TOTAL EN EUROS</span>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="monto" value="0">
+
+                    <div class="payment-box">
+                        <h3 style="color: #1e3c72; margin-bottom: 10px; font-size: 15px;">💳 Modalidad de Pago y Abonos (Facilidades)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Método de Pago:</label>
+                                <select id="metodo">
+                                    <option value="Efectivo ($)">Efectivo ($)</option>
+                                    <option value="Pago Móvil (Bs)">Pago Móvil (Bolívares)</option>
+                                    <option value="Efectivo (Bs)">Efectivo (Bolívares)</option>
+                                    <option value="Zelle">Zelle</option>
+                                    <option value="Efectivo (€)">Efectivo (€)</option>
+                                    <option value="Tarjeta">Tarjeta de Débito / Crédito</option>
+                                    <option value="Pago Mixto">Pago Mixto</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Monto Abonado / Pagado ($):</label>
+                                <input type="number" step="0.01" id="montoAbonado" value="0.00" placeholder="0.00" oninput="calcularTotales()">
+                            </div>
+                        </div>
+                        <p id="infoRestante" style="font-weight: 600; color: #d97706; margin-top: 5px;"></p>
+                    </div>
+
+                    <button type="submit" class="btn">Registrar y Guardar Orden de Laboratorio</button>
+                    <!-- BOTÓN MODIFICADO SOLO CON "IMPRIMIR ORDEN" -->
+                    <button type="button" class="btn btn-print" onclick="window.print()">🖨️ Imprimir Orden</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
